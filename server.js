@@ -6,7 +6,7 @@ const url = 'mongodb://localhost:27017/NSPT-db'
 
 const insertSize = parseInt(process.argv[2], 10) || 100
 let pack = customers.length / (customers.length / insertSize);
-let arrayToConstruct = [];
+let packArray = [];
 let tasks = [];
 
 mongodb.MongoClient.connect(url, (error, db) => {
@@ -21,11 +21,11 @@ mongodb.MongoClient.connect(url, (error, db) => {
 
     for (let index = 0; index < customers.length; index++) {
         customers[index] = Object.assign(customers[index], addresses[index]);
-        arrayToConstruct.push(index);
-        if (arrayToConstruct.length === pack) {
-            const start = arrayToConstruct[0];
-            const end = arrayToConstruct[arrayToConstruct.length - 1];
-            arrayToConstruct = [];
+        packArray.push(index);
+        if (packArray.length === pack) {
+            const start = packArray[0];
+            const end = packArray[packArray.length - 1];
+            packArray = [];
             tasks.push((done) => {
                 console.log('INSERTING FROM ' + start + ' TO ' + end);
                 db.collection('customers').insert(customers.slice(start, end), (error, results) => {
@@ -35,7 +35,7 @@ mongodb.MongoClient.connect(url, (error, db) => {
         }
     }
 
-    const startTime = Date.now()
+    const startTime = Date.now();
     async.parallel(tasks, (error, result) => {
         if (error) {
             console.log('ASYNC ERROR : ', error);
